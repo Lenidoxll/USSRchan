@@ -194,7 +194,6 @@ class USSRchan:
             result.add((i, j))
         return list(result)
 
-
     def get_statistic(self, r, c):
         dict_stat = {}
         for comb in self.combinations:
@@ -219,11 +218,11 @@ class USSRchan:
     def get_result(self):
         figures_pos = self.combinations[0].positions
         for x, y, f in figures_pos:
+            pyautogui.moveTo(*coord_cells[x][y])
+            time.sleep(0.1)
             for _ in range(self.count_click_for_figures[f]):
-                pyautogui.moveTo(*coord_cells[x][y])
-                time.sleep(0.2)
                 pyautogui.click(*coord_cells[x][y])
-                time.sleep(0.2)
+                time.sleep(0.1)
         pyautogui.moveTo(give_answer_btn)
         time.sleep(0.1)
         pyautogui.click(clicks=2, interval=0.2)
@@ -240,8 +239,6 @@ class USSRchan:
             except pyautogui.ImageNotFoundException:
                 pass
         raise ValueError
-
-
 
     def game(self):
         game_over = False
@@ -268,7 +265,7 @@ class USSRchan:
         return self.get_result()
 
 if __name__ == '__main__':
-    for _ in range(2):
+    for _ in range(10):
         pyautogui.moveTo(play_btn)
         time.sleep(0.1)
         pyautogui.click()
