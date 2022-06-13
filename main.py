@@ -10,6 +10,7 @@ width = 70
 coord_cells = [[(70 + width * column, 105 + width * row) for column in range(8)] for row in range(8)]
 
 give_answer_btn = (480, 650)
+play_btn = (475, 80)
 
 from itertools import *
 
@@ -229,7 +230,9 @@ class USSRchan:
                 time.sleep(0.2)
                 pyautogui.click(*coord_cells[x][y])
                 time.sleep(0.2)
-        pyautogui.click(*give_answer_btn, clicks=2, interval=0.2)
+        pyautogui.moveTo(give_answer_btn)
+        time.sleep(0.1)
+        pyautogui.click(clicks=2, interval=0.2)
         return figures_pos
 
     def get_answer(self, ask):
@@ -258,16 +261,28 @@ class USSRchan:
                 ask = self.move(answer, position)
                 if ask is not None:
                     pyautogui.moveTo(coord_cells[ask[0]][ask[1]])
-                    time.sleep(0.2)
+                    time.sleep(0.1)
                     pyautogui.click()
-                    time.sleep(0.2)
+                    time.sleep(0.1)
                     answer = self.get_answer(ask)
                 position = ask
         return self.get_result()
 
 
-ussrchan = USSRchan()
-print(ussrchan.game())
+# ussrchan = USSRchan()
+# print(ussrchan.game())
+
+
+if __name__ == '__main__':
+    for _ in range(2):
+        pyautogui.moveTo(play_btn)
+        time.sleep(0.1)
+        pyautogui.click()
+        time.sleep(0.1)
+        ussrchan = USSRchan()
+        ussrchan.game()
+        time.sleep(0.1)
+        pyautogui.click()
 
 
 
