@@ -1,14 +1,7 @@
 import pyautogui
-from pprint import pprint
-import itertools
 import time
-
-
-width = 70
-coord_cells = [[(70 + width * column, 105 + width * row) for column in range(8)] for row in range(8)]
-
-give_answer_btn = (480, 650)
-
+import os.path
+import datetime
 from itertools import *
 
 class Combination:
@@ -175,19 +168,36 @@ class Combination:
                 break
             self.gameboard[i][j] += 1
 
+width = 70
+coord_cells = [[(70 + width * column, 105 + width * row) for column in range(8)] for row in range(8)]
+
+give_answer_btn = (480, 650)
+play_btn = (475, 80)
+
 class USSRchan:
     count_click_for_figures = {"knight": 1, "rook": 2, "bishop": 3, "queen": 4, "king": 5}
 
-    def __init__(self, positions):
+    def __init__(self):
+        positions = self.get_figures_position()
         self.combinations = []
         for perm in permutations(["king", "queen", "knight", "bishop", "rook"], 5):
             self.combinations.append(Combination(positions, perm))
+
+    def get_figures_position(self):
+        list_questions = list(pyautogui.locateAllOnScreen('resources/question.png', confidence=0.975))
+        result = set()
+        for x, y, w, h in list_questions:
+            x -= 70
+            y -= 105
+            j = x // width + 1
+            i = y // width + 1
+            result.add((i, j))
+        return list(result)
 
     def get_statistic(self, r, c):
         dict_stat = {}
         for comb in self.combinations:
             dict_stat[comb.gameboard[r][c]] = 1 + dict_stat.get(comb.gameboard[r][c], 0)
-        # print("r =", r, " c =", c, max(dict_stat.values()))
         return max(dict_stat.values())
 
     def move(self, answer = None, position = None):
@@ -208,13 +218,27 @@ class USSRchan:
     def get_result(self):
         figures_pos = self.combinations[0].positions
         for x, y, f in figures_pos:
+            pyautogui.moveTo(*coord_cells[x][y])
+            time.sleep(0.1)
             for _ in range(self.count_click_for_figures[f]):
-                pyautogui.moveTo(*coord_cells[x][y])
-                time.sleep(0.2)
                 pyautogui.click(*coord_cells[x][y])
-                time.sleep(0.2)
-        pyautogui.click(*give_answer_btn, clicks=2, interval=0.2)
+                time.sleep(0.1)
+        pyautogui.moveTo(give_answer_btn)
+        time.sleep(0.1)
+        pyautogui.click(clicks=2, interval=0.2)
         return figures_pos
+
+    def get_answer(self, ask):
+        left_top = tuple(n - width // 2 for n in coord_cells[ask[0]][ask[1]])
+        for file_name in os.listdir('numbers'):
+            try:
+                file_path = os.path.join('numbers', file_name)
+                if pyautogui.locateOnScreen(file_path, region=(*left_top, width, width), confidence=0.85) is None:
+                    continue
+                return int(file_name[0])
+            except pyautogui.ImageNotFoundException:
+                pass
+        raise ValueError
 
     def game(self):
         game_over = False
@@ -226,23 +250,26 @@ class USSRchan:
             else:
                 ask = self.move(answer, position)
                 if ask is not None:
-                    pyautogui.click(coord_cells[ask[0]][ask[1]])
-                    answer = int(input())
+                    pyautogui.moveTo(coord_cells[ask[0]][ask[1]])
+                    time.sleep(0.1)
+                    pyautogui.click()
+                    time.sleep(0.1)
+                    try:
+                        answer = self.get_answer(ask)
+                    except ValueError:
+                        cur_file_name = str(datetime.datetime.now()).split('.')[0] + '.png'
+                        cur_file_name = cur_file_name.replace(':', '_')
+                        pyautogui.screenshot(os.path.join('fails', cur_file_name))
+                        game_over = True
                 position = ask
         return self.get_result()
 
-
-ussrchan = USSRchan([(0, 3), (2, 7), (3, 4), (3, 7), (4, 2)])
-print(ussrchan.game())
-
-
-
-
-def test_combination():
-    position = [(4, 4), (3, 2)]
-    figures = ["queen", "knight"]
-    proba_comb = Combination(position, figures)
-    print(proba_comb.positions)
-    pprint(proba_comb.gameboard)
-
-# test_combination()
+if __name__ == '__main__':
+    for _ in range(10):
+        pyautogui.moveTo(play_btn)
+        time.sleep(0.1)
+        pyautogui.click()
+        ussrchan = USSRchan()
+        ussrchan.game()
+        time.sleep(0.1)
+        pyautogui.click()
