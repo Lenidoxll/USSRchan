@@ -2,6 +2,8 @@ import pyautogui
 from pprint import pprint
 import itertools
 import time
+import os.path
+import PIL
 
 
 width = 70
@@ -216,6 +218,21 @@ class USSRchan:
         pyautogui.click(*give_answer_btn, clicks=2, interval=0.2)
         return figures_pos
 
+    def get_answer(self, ask):
+        left_top = tuple(n - width // 2 for n in coord_cells[ask[0]][ask[1]])
+        for file_name in os.listdir('numbers'):
+            try:
+                file_path = os.path.join('numbers', file_name)
+                if pyautogui.locateOnScreen(file_path, region=(*left_top, width, width), confidence=0.85) is None:
+                    continue
+                print(int(file_name[0]))
+                return int(file_name[0])
+            except pyautogui.ImageNotFoundException:
+                pass
+        raise 'nothing'
+
+
+
     def game(self):
         game_over = False
         answer = None
@@ -227,12 +244,12 @@ class USSRchan:
                 ask = self.move(answer, position)
                 if ask is not None:
                     pyautogui.click(coord_cells[ask[0]][ask[1]])
-                    answer = int(input())
+                    answer = self.get_answer(ask)
                 position = ask
         return self.get_result()
 
 
-ussrchan = USSRchan([(0, 3), (2, 7), (3, 4), (3, 7), (4, 2)])
+ussrchan = USSRchan([(1, 0), (1, 5), (2, 2), (2, 7), (6, 4)])
 print(ussrchan.game())
 
 
