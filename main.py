@@ -1,4 +1,14 @@
+import pyautogui
 from pprint import pprint
+import itertools
+import time
+
+
+width = 70
+coord_cells = [[(70 + width * column, 105 + width * row) for column in range(8)] for row in range(8)]
+
+give_answer_btn = (480, 650)
+
 from itertools import *
 
 class Combination:
@@ -166,6 +176,8 @@ class Combination:
             self.gameboard[i][j] += 1
 
 class USSRchan:
+    count_click_for_figures = {"knight": 1, "rook": 2, "bishop": 3, "queen": 4, "king": 5}
+
     def __init__(self, positions):
         self.combinations = []
         for perm in permutations(["king", "queen", "knight", "bishop", "rook"], 5):
@@ -194,7 +206,15 @@ class USSRchan:
         return pos if len(self.combinations) > 1 else None
 
     def get_result(self):
-        return self.combinations[0].positions
+        figures_pos = self.combinations[0].positions
+        for x, y, f in figures_pos:
+            for _ in range(self.count_click_for_figures[f]):
+                pyautogui.moveTo(*coord_cells[x][y])
+                time.sleep(0.2)
+                pyautogui.click(*coord_cells[x][y])
+                time.sleep(0.2)
+        pyautogui.click(*give_answer_btn, clicks=2, interval=0.2)
+        return figures_pos
 
     def game(self):
         game_over = False
@@ -206,13 +226,13 @@ class USSRchan:
             else:
                 ask = self.move(answer, position)
                 if ask is not None:
-                    print(ask, "?")
+                    pyautogui.click(coord_cells[ask[0]][ask[1]])
                     answer = int(input())
                 position = ask
         return self.get_result()
 
 
-ussrchan = USSRchan([(0, 7), (3, 6), (5, 5), (7, 3), (7, 4)])
+ussrchan = USSRchan([(0, 3), (2, 7), (3, 4), (3, 7), (4, 2)])
 print(ussrchan.game())
 
 
