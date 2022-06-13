@@ -180,10 +180,24 @@ class Combination:
 class USSRchan:
     count_click_for_figures = {"knight": 1, "rook": 2, "bishop": 3, "queen": 4, "king": 5}
 
-    def __init__(self, positions):
+    def __init__(self):
+        positions = self.get_figures_position()
         self.combinations = []
         for perm in permutations(["king", "queen", "knight", "bishop", "rook"], 5):
             self.combinations.append(Combination(positions, perm))
+
+    def get_figures_position(self):
+        list_questions = list(pyautogui.locateAllOnScreen('resources/question.png', confidence=0.975))
+        result = set()
+        for x, y, w, h in list_questions:
+            x -= 70
+            y -= 105
+            j = x // width + 1
+            i = y // width + 1
+            result.add((i, j))
+        print(result)
+        return list(result)
+
 
     def get_statistic(self, r, c):
         dict_stat = {}
@@ -243,15 +257,17 @@ class USSRchan:
             else:
                 ask = self.move(answer, position)
                 if ask is not None:
-                    pyautogui.click(coord_cells[ask[0]][ask[1]])
+                    pyautogui.moveTo(coord_cells[ask[0]][ask[1]])
+                    time.sleep(0.2)
+                    pyautogui.click()
+                    time.sleep(0.2)
                     answer = self.get_answer(ask)
                 position = ask
         return self.get_result()
 
 
-ussrchan = USSRchan([(1, 0), (1, 5), (2, 2), (2, 7), (6, 4)])
+ussrchan = USSRchan()
 print(ussrchan.game())
-
 
 
 
